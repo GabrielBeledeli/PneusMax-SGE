@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "../atoms/Button";
 import { Input } from "../atoms/Input";
+import Link from "next/link";
+import { cn } from "@/app/lib/utils";
 
 export function LoginForm() {
   const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // espaço reservado apra logica de login
     setError("Funcionalidade de login em desenvolvimento.");
   };
 
@@ -27,9 +27,15 @@ export function LoginForm() {
         required
         className="bg-white/90"
       />
-      <Button type="submit" className="mt-2">
+      <Link
+        href="/home"
+        className={cn(
+          "mt-2 flex items-center justify-center rounded-md bg-primary px-4 py-3 text-base font-medium text-white transition-colors",
+          "hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        )}
+      >
         Entrar
-      </Button>
+      </Link>
       {error && (
         <p className="mt-2 text-center text-sm font-medium text-error">
           {error}
