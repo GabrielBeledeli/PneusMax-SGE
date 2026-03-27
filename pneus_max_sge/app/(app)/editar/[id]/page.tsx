@@ -1,5 +1,5 @@
 import { getPneuById } from "@/app/lib/data";
-import { ProductForm } from "@/app/components/organisms/ProductForm";
+import  ProductForm  from "@/app/components/organisms/ProductForm";
 import { notFound } from "next/navigation";
 
 export default async function EditarPage({ params }: { params: Promise<{ id: string }> }) {
@@ -16,17 +16,12 @@ export default async function EditarPage({ params }: { params: Promise<{ id: str
     notFound();
   }
 
-  const handleFormSubmit = async (formData: FormData) => {
-    "use server";
-    console.log("Formulário de edição enviado. Dados:", Object.fromEntries(formData.entries()));
-  };
-
   return (
     <div className="space-y-6 p-4 md:p-8">
       <h1 className="text-2xl font-bold">
         Editar Produto: <span className="text-primary">{pneu.modelo} (ID: {pneu.id})</span>
       </h1>
-      <ProductForm initialData={pneu} onSubmit={handleFormSubmit} />
+      <ProductForm initialData={pneu} />
     </div>
   );
 }
