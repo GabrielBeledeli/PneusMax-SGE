@@ -1,5 +1,4 @@
-export interface Pneu {
-  id: number;
+export class CreatePneuDto {
   marca: string;
   modelo: string;
   medida: string;
@@ -13,5 +12,4 @@ export interface Pneu {
   desenho: string;
   preco: number;
   quantidade: number;
-  createdAt: string;
 }

@@ -1,16 +1,19 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Pneu } from './types';
+import { Pneu } from "./types";
 
-const pneusJsonPath = path.join(process.cwd(), 'app', 'pneus.json');
+const API_BASE_URL = "http://localhost:3001";
 
 async function getPneusData(): Promise<Pneu[]> {
   try {
-    const fileContents = await fs.readFile(pneusJsonPath, 'utf8');
-    const pneus = JSON.parse(fileContents);
+    const response = await fetch(`${API_BASE_URL}/pneus`,{
+      cache: 'no-store',
+    });
+    if (!response.ok) {
+      throw new Error("Failed to fetch pneus");
+    }
+    const pneus = await response.json();
     return pneus as Pneu[];
   } catch (error) {
-    console.error('Erro ao ler ou parsear pneus.json:', error);
+    console.error("Erro ao buscar pneus da API:", error);
     return [];
   }
 }
@@ -20,7 +23,17 @@ export async function getPneus(): Promise<Pneu[]> {
 }
 
 export async function getPneuById(id: number): Promise<Pneu | undefined> {
-  const pneus = await getPneusData();
-  const pneuEncontrado = pneus.find(pneu => pneu.id === id);
-  return pneuEncontrado;
+  try {
+    const response = await fetch(`${API_BASE_URL}/pneus/${id}`,{
+      cache: 'no-store',
+    });
+    if (!response.ok) {
+      return undefined;
+    }
+    const pneu = await response.json();
+    return pneu as Pneu;
+  } catch (error) {
+    console.error("Erro ao buscar pneu por ID:", error);
+    return undefined;
+  }
 }

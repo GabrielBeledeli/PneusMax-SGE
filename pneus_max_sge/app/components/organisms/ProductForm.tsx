@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,42 +13,58 @@ interface ProductFormProps {
 }
 
 export default function ProductForm({ initialData }: ProductFormProps) {
+  const router = useRouter(); 
+
   const [status, setStatus] = useState<"ocioso" | "carregando" | "sucesso" | "erro">("ocioso");
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<PneuFormData>({
-    resolver: zodResolver(pneuSchema) as any,
-    defaultValues: initialData || {}, 
-  });
+  resolver: zodResolver(pneuSchema) as any,
+  defaultValues: initialData || {},
+});
 
   const onSubmit = async (data: PneuFormData) => {
     setStatus("carregando");
-    
+
     try {
       const isEdicao = !!initialData?.id;
-      const url = isEdicao ? `/api/pneus/${initialData.id}` : '/api/pneus';
+
+      const dataFormatado = {
+        ...data,
+        preco: Number(data.preco.toString().replace(",", ".")),
+        quantidade: Number(data.quantidade),
+        aro: Number(data.aro),
+      };
+
+      const url = isEdicao 
+        ? `http://localhost:3001/pneus/${initialData.id}` 
+        : 'http://localhost:3001/pneus';
+
       const method = isEdicao ? 'PUT' : 'POST';
 
       const resposta = await fetch(url, {
-        method: method,
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(dataFormatado),
       });
 
-      if (!resposta.ok) throw new Error("Erro na API");
-
-      setStatus("sucesso");
-      
-      if (!isEdicao) {
-        reset(); 
+      if (!resposta.ok) {
+        const erro = await resposta.text();
+        console.error("ERRO BACKEND:", erro);
+        throw new Error("Erro na API");
       }
-      
-      setTimeout(() => setStatus("ocioso"), 4000); 
+      setStatus("sucesso");
+
+      setTimeout(() => {
+        router.push('/dashboard');
+        router.refresh();
+      }, 500);
+      reset();
+
     } catch (error) {
       console.error(error);
       setStatus("erro");
     }
   };
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="bg-background p-6 md:p-8 rounded-xl w-full mx-auto shadow-lg border border-border">
       
