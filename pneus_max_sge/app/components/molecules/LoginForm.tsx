@@ -3,8 +3,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import Link from "next/link";
-import { cn } from "@/app/lib/utils";
+import { useRouter } from "next/navigation";
+import { Button } from "../atoms/Button";
 import { FormField } from "./FormField";
 
 const loginSchema = z.object({
@@ -15,6 +15,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -23,8 +24,8 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (_data: LoginFormData) => {
-    // Autenticação a ser implementada
+  const onSubmit = (_data: LoginFormData) => {
+    router.push("/home");
   };
 
   return (
@@ -38,6 +39,7 @@ export function LoginForm() {
         placeholder="Usuário"
         className="bg-white/90"
         error={errors.usuario?.message}
+        hideLabel
         {...register("usuario")}
       />
       <FormField
@@ -47,20 +49,12 @@ export function LoginForm() {
         placeholder="Senha"
         className="bg-white/90"
         error={errors.senha?.message}
+        hideLabel
         {...register("senha")}
       />
-      <Link
-        href="/home"
-        onClick={(e) => {
-          if (isSubmitting) e.preventDefault();
-        }}
-        className={cn(
-          "mt-2 flex items-center justify-center rounded-md bg-primary px-4 py-3 text-base font-medium text-white transition-colors",
-          "hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-        )}
-      >
+      <Button type="submit" disabled={isSubmitting} className="mt-2">
         Entrar
-      </Link>
+      </Button>
     </form>
   );
 }

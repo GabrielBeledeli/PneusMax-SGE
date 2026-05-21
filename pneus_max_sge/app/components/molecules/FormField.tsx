@@ -5,13 +5,19 @@ interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   id: string;
   error?: string;
+  hideLabel?: boolean;
 }
 
 export const FormField = React.forwardRef<HTMLInputElement, FormFieldProps>(
-  ({ label, id, error, ...props }, ref) => {
+  ({ label, id, error, hideLabel = false, ...props }, ref) => {
     return (
       <div className="flex flex-col gap-2">
-        <label htmlFor={id} className="text-sm font-semibold text-foreground">
+        <label
+          htmlFor={id}
+          className={
+            hideLabel ? "sr-only" : "text-sm font-semibold text-foreground"
+          }
+        >
           {label}
         </label>
         <Input id={id} name={id} ref={ref} {...props} />
