@@ -1,28 +1,64 @@
 import { NextResponse } from "next/server";
 
-// Exportamos o método PUT, que é o padrão para atualizações
-export async function PUT(
-  request: Request, 
-  props: { params: Promise<{ id: string }> }
-) {
+const BACKEND_API_URL = process.env.BACKEND_API_URL ?? "http://localhost:3001";
+
+async function proxyPneu(id: string, requestInit?: RequestInit) {
   try {
-    // No Next.js 15+, os params são uma Promise, então precisamos aguardar (await)
-    const { id } = await props.params;
-    
-    // Pegamos os dados atualizados que vieram do formulário
-    const body = await request.json();
-    
-    // Simula o tempo de processamento do banco de dados (1 segundo)
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const response = await fetch(`${BACKEND_API_URL}/pneus/${id}`, {
+      ...requestInit,
+      headers: {
+        "Content-Type": "application/json",
+        ...requestInit?.headers,
+      },
+      cache: "no-store",
+    });
 
-    // Como é um Mock, retornamos sucesso e devolvemos os dados
-    return NextResponse.json({ 
-      mensagem: `Pneu ID ${id} atualizado com sucesso!`, 
-      dados: body 
-    }, { status: 200 });
+    const text = await response.text();
 
+    return new NextResponse(text, {
+      status: response.status,
+      headers: {
+        "Content-Type": response.headers.get("Content-Type") ?? "application/json",
+      },
+    });
   } catch (error) {
-    console.error("Erro na atualização:", error);
-    return NextResponse.json({ erro: "Falha ao atualizar o pneu" }, { status: 500 });
+    console.error("Erro ao comunicar com o backend:", error);
+    return NextResponse.json(
+      { erro: "Falha ao comunicar com o backend" },
+      { status: 502 },
+    );
   }
+}
+
+export async function GET(
+  _request: Request,
+  props: { params: Promise<{ id: string }> },
+) {
+  const { id } = await props.params;
+
+  return proxyPneu(id);
+}
+
+export async function PUT(
+  request: Request,
+  props: { params: Promise<{ id: string }> },
+) {
+  const { id } = await props.params;
+  const body = await request.json();
+
+  return proxyPneu(id, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function DELETE(
+  _request: Request,
+  props: { params: Promise<{ id: string }> },
+) {
+  const { id } = await props.params;
+
+  return proxyPneu(id, {
+    method: "DELETE",
+  });
 }

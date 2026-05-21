@@ -1,21 +1,28 @@
-import { InputHTMLAttributes } from "react";
+import React from "react";
 import { Input } from "../atoms/Input";
 
-interface FormFieldProps extends InputHTMLAttributes<HTMLInputElement> {
+interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   id: string;
+  error?: string;
 }
 
-export function FormField({ label, id, ...props }: FormFieldProps) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label 
-        htmlFor={id} 
-        className="text-sm font-semibold text-foreground"
-      >
-        {label}
-      </label>
-      <Input id={id} name={id} {...props} />
-    </div>
-  );
-}
+export const FormField = React.forwardRef<HTMLInputElement, FormFieldProps>(
+  ({ label, id, error, ...props }, ref) => {
+    return (
+      <div className="flex flex-col gap-2">
+        <label htmlFor={id} className="text-sm font-semibold text-foreground">
+          {label}
+        </label>
+        <Input id={id} name={id} ref={ref} {...props} />
+        {error && (
+          <span className="text-red-500 text-xs font-medium" role="alert">
+            {error}
+          </span>
+        )}
+      </div>
+    );
+  }
+);
+
+FormField.displayName = "FormField";

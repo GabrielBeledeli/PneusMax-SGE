@@ -1,21 +1,44 @@
 import { NextResponse } from "next/server";
 
-// A função TEM que se chamar POST (em maiúsculo) e não pode ter 'default'
-export async function POST(request: Request) {
+const BACKEND_API_URL = process.env.BACKEND_API_URL ?? "http://localhost:3001";
+
+async function proxyPneus(requestInit?: RequestInit) {
   try {
-    const body = await request.json();
-    
-    // Simula um tempo de rede para você ver o botão "Salvando..."
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const response = await fetch(`${BACKEND_API_URL}/pneus`, {
+      ...requestInit,
+      headers: {
+        "Content-Type": "application/json",
+        ...requestInit?.headers,
+      },
+      cache: "no-store",
+    });
 
-    // Retorna o status 201 (Created) que o nosso formulário está esperando
-    return NextResponse.json({ 
-      mensagem: "Pneu cadastrado com sucesso!", 
-      pneu: body 
-    }, { status: 201 });
+    const text = await response.text();
 
+    return new NextResponse(text, {
+      status: response.status,
+      headers: {
+        "Content-Type": response.headers.get("Content-Type") ?? "application/json",
+      },
+    });
   } catch (error) {
-    console.error("Erro no backend:", error);
-    return NextResponse.json({ erro: "Falha ao processar requisição" }, { status: 500 });
+    console.error("Erro ao comunicar com o backend:", error);
+    return NextResponse.json(
+      { erro: "Falha ao comunicar com o backend" },
+      { status: 502 },
+    );
   }
+}
+
+export async function GET() {
+  return proxyPneus();
+}
+
+export async function POST(request: Request) {
+  const body = await request.json();
+
+  return proxyPneus({
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
